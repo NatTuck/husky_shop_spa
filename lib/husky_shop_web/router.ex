@@ -17,10 +17,19 @@ defmodule HuskyShopWeb.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
+    get "/users", PageController, :index
+    get "/products", PageController, :index
+    get "/checkout", PageController, :index
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", HuskyShopWeb do
-  #   pipe_through :api
-  # end
+  scope "/api/v1", HuskyShopWeb do
+    pipe_through :api
+
+    resources "/sessions", SessionController, only: [:create]
+
+    resources "/users", UserController, except: [:new, :edit]
+    resources "/products", ProductController, except: [:new, :edit]
+    resources "/cart_items", CartItemController, except: [:new, :edit] 
+  end
 end

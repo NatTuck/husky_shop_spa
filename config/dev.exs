@@ -62,7 +62,7 @@ config :phoenix, :plug_init_mode, :runtime
 # Configure your database
 config :husky_shop, HuskyShop.Repo,
   username: "husky_shop",
-  password: "iChuseec1Kae",
+  password: "vuCohj5theic",
   database: "husky_shop_dev",
   hostname: "localhost",
   pool_size: 10
