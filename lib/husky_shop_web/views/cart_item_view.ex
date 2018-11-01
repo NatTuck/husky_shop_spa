@@ -11,7 +11,14 @@ defmodule HuskyShopWeb.CartItemView do
   end
 
   def render("cart_item.json", %{cart_item: cart_item}) do
-    %{id: cart_item.id,
-      count: cart_item.count}
+    product = HuskyShopWeb.ProductView.render(
+      "product.json", %{product: cart_item.product})
+
+    %{
+      id: cart_item.id,
+      count: cart_item.count,
+      product: product,
+      user_id: cart_item.user_id,
+    }
   end
 end
