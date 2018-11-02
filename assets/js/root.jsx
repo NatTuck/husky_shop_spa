@@ -8,6 +8,7 @@ import $ from 'jquery';
 import Header from './header';
 import Cart from './cart';
 import UserList from './user_list';
+import ProductList from './product_list';
 
 export default function root_init(node) {
   ReactDOM.render(<Root products={window.products} />, node);
@@ -21,9 +22,10 @@ class Root extends React.Component {
       users: [],
       session: null,
       cart: [],
+      add_cart_forms: new Map(),
     };
 
-    //this.fetch_products();
+    this.fetch_products();
     this.fetch_users();
     this.fetch_cart();
     this.create_session("bob@example.com", "pass1");
@@ -50,16 +52,23 @@ class Root extends React.Component {
   }
 
   fetch_products() {
-    $.ajax("/api/v1/products", {
-      method: "get",
-      dataType: "json",
-      contentType: "application/json; charset=UTF-8",
-      data: "",
-      success: (resp) => {
-        let state1 = _.assign({}, this.state, { products: resp.data });
+    this.fetch_path(
+      "/api/v1/products",
+      (resp) => {
+        let counts1 = new Map(this.state.add_cart_forms);
+        _.each(resp.data, (product) => {
+          if (!counts1.has(product.id)) {
+            counts1.set(product.id, 1);
+          }
+        });
+
+        let state1 = _.assign({}, this.state, {
+          products: resp.data,
+          add_cart_forms: counts1,
+        });
         this.setState(state1);
       }
-    });
+    );
   }
 
   fetch_users() {
@@ -112,6 +121,13 @@ class Root extends React.Component {
     });
   }
 
+  update_add_cart_count(product_id, count) {
+    let counts1 = new Map(this.state.add_cart_forms);
+    counts1.set(product_id, count);
+    let state1 = _.assign({}, this.state, { add_cart_forms: counts1 });
+    this.setState(state1);
+  }
+
   add_to_cart(product_id) {
     let user_id = this.state.session.user_id;
     let count = $('#item-count-' + product_id).val();
@@ -134,7 +150,9 @@ class Root extends React.Component {
           <div className="row">
             <div className="col-8">
               <Route path="/" exact={true} render={() =>
-                <ProductList root={this} products={this.state.products} />
+                <ProductList root={this}
+                             products={this.state.products}
+                             counts={this.state.add_cart_forms} />
               } />
               <Route path="/users" exact={true} render={() =>
                 <UserList users={this.state.users} />
@@ -148,33 +166,4 @@ class Root extends React.Component {
       </Router>
     </div>;
   }
-}
-
-function ProductList(props) {
-  let {root, products} = props;
-  let prods = _.map(products, (pp) => <Product key={pp.id} product={pp} root={root} />);
-  return <div className="row">
-    {prods}
-  </div>;
-}
-
-function Product(props) {
-  let {root, product} = props;
-  return <div className="card col-4">
-    <div className="card-body">
-      <h2 className="card-title">{product.name}</h2>
-      <p className="card-text">
-        {product.desc} <br />
-        price: {product.price}
-      </p>
-      <p className="form-inline">
-        <input className="form-control" style={{width: "8ex"}}
-               type="number" defaultValue="1" id={"item-count-" + product.id} />
-        <button className="btn btn-primary"
-                onClick={() => root.add_to_cart(product.id)}>
-          Add to Cart
-        </button>
-      </p>
-    </div>
-  </div>;
 }
