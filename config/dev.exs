@@ -8,6 +8,7 @@ use Mix.Config
 # with webpack to recompile .js and .css sources.
 config :husky_shop, HuskyShopWeb.Endpoint,
   http: [port: 4000],
+  #url: [host: "celedyr.ccs.neu.edu", port: 4000],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,

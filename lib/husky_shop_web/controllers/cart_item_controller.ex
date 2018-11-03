@@ -13,6 +13,7 @@ defmodule HuskyShopWeb.CartItemController do
 
   def create(conn, %{"cart_item" => cart_item_params}) do
     with {:ok, %CartItem{} = cart_item} <- CartItems.create_cart_item(cart_item_params) do
+      cart_item = CartItems.get_cart_item!(cart_item.id)
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.cart_item_path(conn, :show, cart_item))
