@@ -1,7 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import _ from 'lodash';
 
-export default function Cart(props) {
+import api from './api';
+
+function Cart(props) {
     let {cart} = props;
     let rows = _.map(cart, (ci) => <CartItem key={ci.id} item={ci} />);
     return <div>
@@ -14,12 +17,15 @@ export default function Cart(props) {
     </div>;
 }
 
+export default connect(({cart}) => ({cart}))(Cart);
+
 function CartItem(props) {
     let {item} = props;
     return <tr>
         <td>{item.product.name}</td>
         <td>{item.count}</td>
-        <td><button className="btn btn-default">Remove</button></td>
+        <td><button className="btn btn-default"
+            onClick={() => api.remove_cart(item.id)}>Remove</button></td>
     </tr>;
 }
 

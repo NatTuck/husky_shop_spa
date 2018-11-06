@@ -11,7 +11,10 @@ defmodule HuskyShopWeb.CartItemController do
     render(conn, "index.json", cart_items: cart_items)
   end
 
-  def create(conn, %{"cart_item" => cart_item_params}) do
+  def create(conn, %{"cart_item" => cart_item_params, "token" => token}) do
+    {:ok, user_id} = Phoenix.Token.verify(
+      HuskyShopWeb.Endpoint, "user_id", token, max_age: 86400)
+    IO.inspect({"should be equal", user_id, cart_item_params["user_id"]})
     with {:ok, %CartItem{} = cart_item} <- CartItems.create_cart_item(cart_item_params) do
       cart_item = CartItems.get_cart_item!(cart_item.id)
       conn
