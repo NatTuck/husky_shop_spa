@@ -3,5 +3,9 @@
     <div class="col-12">
       <p>React component loading...</p>
     </div>
+
+    <script>
+     window.products = <% raw Jason.encode!(@products) %>;
+    </script>
   </div>
 </div>
