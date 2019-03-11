@@ -6,7 +6,6 @@ defmodule HuskyShopWeb.PageController do
     |> Enum.map(fn prod ->
       HuskyShopWeb.ProductView.render("product.json", %{product: prod})
     end)
-    IO.inspect(products)
     render conn, "index.html", products: products
   end
 end
