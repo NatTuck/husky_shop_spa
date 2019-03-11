@@ -5,7 +5,7 @@
     </div>
 
     <script>
-     window.products = <% raw Jason.encode!(@products) %>;
+     window.products = <%= raw Jason.encode!(@products) %>;
     </script>
   </div>
 </div>
