@@ -38,6 +38,16 @@ defmodule HuskyShop.Users do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
+  Authenticates a user.
+
+  Returns {:ok, user} on success, or {:error, msg} on failure.
+  """
+  def authenticate_user(email, password) do
+    Repo.get_by(User, email: email)
+    |> Argon2.check_pass(password)
+  end
+
+  @doc """
   Creates a user.
 
   ## Examples

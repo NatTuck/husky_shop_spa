@@ -26,5 +26,6 @@ defmodule HuskyShopWeb.Router do
     resources "/users", UserController, except: [:new, :edit]
     resources "/products", ProductController, except: [:new, :edit]
     resources "/cart_items", CartItemController, except: [:new, :edit]
+    post "/auth", AuthController, :authenticate
   end
 end
