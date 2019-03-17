@@ -2,17 +2,16 @@
 import React from 'react';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-export default function Header(props) {
-  let {root, session} = props;
+function Header(props) {
+  let {session} = props;
   let session_info;
   if (session == null) {
     session_info = <div className="form-inline my-2">
-      <input type="email" placeholder="email"
-             onChange={(ev) => root.update_login_form({email: ev.target.value})} />
-      <input type="password" placeholder="password"
-             onChange={(ev) => root.update_login_form({password: ev.target.value})} />
-      <button className="btn btn-secondary" onClick={() => root.login()}>Login</button>
+      <input type="email" placeholder="email" />
+      <input type="password" placeholder="password" />
+      <button className="btn btn-secondary">Login</button>
     </div>;
   }
   else {
@@ -36,4 +35,10 @@ export default function Header(props) {
     </div>
   </div>;
 }
+
+function state2props(state) {
+  return { session: state.session };
+}
+
+export default connect(state2props)(Header);
 

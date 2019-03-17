@@ -1,21 +1,29 @@
 
 import React from 'react';
 import _ from 'lodash';
+import { connect } from 'react-redux';
+import api from './api';
 
-export default function ProductList(props) {
-  let {products, root} = props;
-  let prods = _.map(products, (p) => <Product key={p.id} product={p} root={root} />);
+function ProductList(props) {
+  let {products, counts, dispatch} = props;
+  let prods = _.map(products, (p) => {
+    let count = counts.get(p.id) || 1;
+    return <Product key={p.id} product={p} count={count} dispatch={dispatch} />
+  });
   return <div className="row">
     {prods}
   </div>;
 }
 
 function Product(props) {
-  let {product, root} = props;
-  let count = root.state.add_cart_forms.get(product.id) || 1;
-
+  let {product, count, dispatch} = props;
   function update(ev) {
-    root.update_add_form_count(product.id, ev.target.value);
+    let action = {
+      type: 'UPDATE_ADD_CART_FORM',
+      product_id: product.id,
+      count: ev.target.value,
+    };
+    dispatch(action);
   }
   return <div className="card col-4">
     <div className="card-body">
@@ -29,10 +37,21 @@ function Product(props) {
           <input type="number" className="form-control col-3 m-1" value={count}
                  onChange={update} />
           <button className="btn btn-primary m-1"
-                 onClick={() => root.add_to_cart(product.id)}>Add</button>
+                 onClick={() => api.add_to_cart(product.id)}>Add</button>
         </div>
       </div>
     </div>
   </div>;
 }
+
+function state2props(state) {
+  console.log("rerender", state);
+  return {
+    products: state.products,
+    counts: state.add_item_forms,
+  };
+}
+
+// Export result of curried function call.
+export default connect(state2props)(ProductList);
 
