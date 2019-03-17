@@ -14,8 +14,8 @@ defmodule HuskyShop.CartItems.CartItem do
   @doc false
   def changeset(cart_item, attrs) do
     cart_item
-    |> cast(attrs, [:count])
-    |> validate_required([:count])
+    |> cast(attrs, [:user_id, :product_id, :count])
+    |> validate_required([:user_id, :product_id, :count])
     |> unique_constraint(:user_id, name: :cart_items_user_id_product_id_index)
   end
 end

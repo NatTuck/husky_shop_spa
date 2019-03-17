@@ -18,7 +18,7 @@ defmodule HuskyShop.CartItems do
 
   """
   def list_cart_items do
-    Repo.all(CartItem)
+    Repo.all(CartItem) |> Repo.preload(:product)
   end
 
   @doc """
@@ -35,7 +35,7 @@ defmodule HuskyShop.CartItems do
       ** (Ecto.NoResultsError)
 
   """
-  def get_cart_item!(id), do: Repo.get!(CartItem, id)
+  def get_cart_item!(id), do: Repo.get!(CartItem, id) |> Repo.preload(:product)
 
   @doc """
   Creates a cart_item.
@@ -52,7 +52,9 @@ defmodule HuskyShop.CartItems do
   def create_cart_item(attrs \\ %{}) do
     %CartItem{}
     |> CartItem.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(
+      on_conflict: :replace_all,
+      conflict_target: [:user_id, :product_id])
   end
 
   @doc """

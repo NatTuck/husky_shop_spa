@@ -12,6 +12,7 @@ defmodule HuskyShopWeb.CartItemController do
   end
 
   def create(conn, %{"cart_item" => cart_item_params}) do
+    IO.inspect(cart_item_params)
     with {:ok, %CartItem{} = cart_item} <- CartItems.create_cart_item(cart_item_params) do
       conn
       |> put_status(:created)

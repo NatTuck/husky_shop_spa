@@ -5,6 +5,11 @@ import { Link, BrowserRouter as Router, Route } from 'react-router-dom';
 import _ from 'lodash';
 import $ from 'jquery';
 
+import Header from './header';
+import UserList from './user_list';
+import ProductList from './product_list';
+import Cart from './cart';
+
 export default function root_init(node) {
   let prods = window.products;
   ReactDOM.render(<Root products={prods} />, node);
@@ -14,13 +19,16 @@ class Root extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      login_form: {email: "", password: ""},
+      login_form: {email: "alice@example.com", password: "password"},
+      add_cart_forms: new Map(),
       session: null,
       products: props.products,
       users: [],
+      cart: [],
     };
 
-    //this.fetch_products();
+    this.login();
+    this.fetch_products();
     this.fetch_users();
   }
 
@@ -46,6 +54,7 @@ class Root extends React.Component {
       success: (resp) => {
         let state1 = _.assign({}, this.state, { session: resp.data });
         this.setState(state1);
+        this.fetch_cart();
       }
     });
   }
@@ -69,97 +78,80 @@ class Root extends React.Component {
     });
   }
 
-  render() {
-    return <Router>
-      <div>
-        <Header session={this.state.session} root={this} />
-        <Route path="/" exact={true} render={() =>
-          <ProductList products={this.state.products} />
-        } />
-        <Route path="/users" exact={true} render={() =>
-          <UserList users={this.state.users} />
-        } />
-      </div>
-    </Router>;
+  fetch_cart() {
+    if (this.state.session == null) {
+      return;
+    }
+    let user_id = this.state.session.user_id || -1;
+    $.ajax(`/api/v1/cart_items?user_id=${user_id}`, {
+      method: "get",
+      dataType: "json",
+      contentType: "application/json; charset=UTF-8",
+      data: "",
+      success: (resp) => {
+        let state1 = _.assign({}, this.state, { cart: resp.data });
+        this.setState(state1);
+      }
+    });
   }
-}
 
-function Header(props) {
-  let {root, session} = props;
-  let session_info;
-  if (session == null) {
-    session_info = <div className="form-inline my-2">
-      <input type="email" placeholder="email"
-             onChange={(ev) => root.update_login_form({email: ev.target.value})} />
-      <input type="password" placeholder="password"
-             onChange={(ev) => root.update_login_form({password: ev.target.value})} />
-      <button className="btn btn-secondary" onClick={() => root.login()}>Login</button>
+  update_add_form_count(product_id, count) {
+    let counts1 = new Map(this.state.add_cart_forms);
+    counts1.set(product_id, count);
+    let state1 = _.assign({}, this.state, { add_cart_forms: counts1 });
+    this.setState(state1);
+  }
+
+  add_to_cart(product_id) {
+    let user_id = this.state.session.user_id;
+    let count = this.state.add_cart_forms.get(product_id) || 1;
+    $.ajax("/api/v1/cart_items", {
+      method: "post",
+      dataType: "json",
+      contentType: "application/json; charset=UTF-8",
+      data: JSON.stringify({cart_item: {product_id, user_id, count}}),
+      success: (resp) => {
+        //let cart1 = _.concat(this.state.cart, [resp.data]);
+        //let state1 = _.assign({}, this.state, { cart: cart1 });
+        //this.setState(state1);
+        this.fetch_cart();
+      }
+    });
+  }
+
+  delete_from_cart(item_id) {
+    $.ajax(`/api/v1/cart_items/${item_id}`, {
+      method: "delete",
+      dataType: "json",
+      contentType: "application/json; charset=UTF-8",
+      data: "",
+      success: (resp) => {
+        this.fetch_cart();
+      }
+    });
+  }
+
+  render() {
+    return <div>
+      <Router>
+        <div>
+          <Header session={this.state.session} root={this} />
+          <div className="row">
+            <div className="col-8">
+              <Route path="/" exact={true} render={() =>
+                <ProductList root={this} products={this.state.products} />
+              } />
+              <Route path="/users" exact={true} render={() =>
+                <UserList root={this} users={this.state.users} />
+              } />
+            </div>
+            <div className="col-4">
+              <Cart root={this} items={this.state.cart} />
+            </div>
+          </div>
+        </div>
+      </Router>
     </div>;
   }
-  else {
-    session_info = <div className="my-2">
-      <p>Logged in as {session.user_id}</p>
-    </div>
-  }
-
-  return <div className="row my-2">
-    <div className="col-4">
-      <h1>Husky Shop</h1>
-    </div>
-    <div className="col-4">
-      <p>
-        <Link to={"/"}>Products</Link> |
-        <Link to={"/users"}>Users</Link>
-      </p>
-    </div>
-    <div className="col-4">
-      {session_info}
-    </div>
-  </div>;
-}
-
-function ProductList(props) {
-  let prods = _.map(props.products, (p) => <Product key={p.id} product={p} />);
-  return <div className="row">
-    {prods}
-  </div>;
-}
-
-function Product(props) {
-  let {product} = props;
-  return <div className="card col-4">
-    <div className="card-body">
-      <h2 className="card-title">{product.name}</h2>
-      <p className="card-text">{product.desc} <br/>
-      price: {product.price}</p>
-    </div>
-  </div>;
-}
-
-function UserList(props) {
-  let rows = _.map(props.users, (uu) => <User key={uu.id} user={uu} />);
-  return <div className="row">
-    <div className="col-12">
-      <table className="table table-striped">
-        <thead>
-          <tr>
-            <th>email</th>
-            <th>admin?</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows}
-        </tbody>
-      </table>
-    </div>
-  </div>;
-}
-
-function User(props) {
-  let {user} = props;
-  return <tr>
-    <td>{user.email}</td>
-    <td>{user.admin ? "yes" : "no"}</td>
-  </tr>;
 }
 
