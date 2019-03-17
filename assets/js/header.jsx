@@ -27,8 +27,8 @@ export default function Header(props) {
     </div>
     <div className="col-4">
       <p>
-        <Link to={"/"}>Products</Link> |
-         <Link to={"/users"}>Users</Link>
+        <Link to={"/"}>Products</Link> &nbsp; | &nbsp;
+        <Link to={"/users"}>Users</Link>
       </p>
     </div>
     <div className="col-4">
